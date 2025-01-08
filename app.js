@@ -2,6 +2,12 @@ const express = require("express");
 const helmet = require("helmet");
 const cors = require("cors");
 const news = require("./routes/news");
+const { sequelize } = require("./public/database/models");
+
+sequelize
+  .sync({ force: false })
+  .then(() => console.log("Connected to the database"))
+  .catch((err) => console.error("Error connecting to the database:", err));
 
 const app = express()
   .use(express.json())
