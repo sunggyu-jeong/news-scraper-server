@@ -2,6 +2,7 @@ const express = require("express");
 const helmet = require("helmet");
 const cors = require("cors");
 const news = require("./routes/news");
+const user = require("./routes/user");
 const { sequelize } = require("./public/database/models");
 
 sequelize
@@ -13,7 +14,7 @@ const app = express()
   .use(express.json())
   .use(helmet())
   .use(cors())
-  .use("/api", news)
+  .use("/api", express.Router().use(news).use(user))
   .use(
     helmet({
       contentSecurityPolicy: {

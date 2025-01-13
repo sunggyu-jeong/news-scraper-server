@@ -1,14 +1,13 @@
-const { DataTypes } = require("sequelize");
+const { DataTypes, Sequelize } = require("sequelize");
 const sequelize = require("../sequelize");
-const bcrypt = require("bcrypt");
+const { hashedPassword } = require("../../../comm/utils");
 
 const tbl_users = sequelize.define("tbl_users", {
   id: {
-    type: DataTypes.UUID,
+    type: Sequelize.INTEGER,
     primaryKey: true,
-    defaultValue: DataTypes.UUIDV4,
+    autoIncrement: true,
     allowNull: false,
-    unique: true,
   },
   user_id: {
     type: DataTypes.STRING,
@@ -23,11 +22,27 @@ const tbl_users = sequelize.define("tbl_users", {
     defaultValue: null,
     allowNull: true,
   },
+  createdAt: {
+    type: DataTypes.DATE,
+    defaultValue: Sequelize.NOW,
+  },
+  updatedAt: {
+    type: DataTypes.DATE,
+    defaultValue: Sequelize.NOW,
+  },
 });
 
 tbl_users.beforeCreate(async (user) => {
-  const hashedPassword = await bcrypt.hash(user.password, 10);
-  user.password = hashedPassword;
+  const password = await hashedPassword(user.password);
+
+  user.password = password;
+});
+
+tbl_users.beforeUpdate(async (user) => {
+  if (user.changed("password")) {
+    const password = await hashedPassword(user.password);
+    user.password = password;
+  }
 });
 
 module.exports = tbl_users;
