@@ -1,9 +1,10 @@
-const express = require("express");
-const helmet = require("helmet");
-const cors = require("cors");
-const news = require("./routes/news");
-const user = require("./routes/user");
-const { sequelize } = require("./public/database/models");
+import express, { json, Router } from "express";
+import helmet from "helmet";
+import cors from "cors";
+import news from "./routes/news.js";
+import user from "./routes/user.js";
+import sequelize from "./public/database/models/index.js";
+import cookieParser from "cookie-parser";
 
 sequelize
   .sync({ force: false })
@@ -11,10 +12,11 @@ sequelize
   .catch((err) => console.error("Error connecting to the database:", err));
 
 const app = express()
-  .use(express.json())
+  .use(json())
   .use(helmet())
   .use(cors())
-  .use("/api", express.Router().use(news).use(user))
+  .use(cookieParser())
+  .use("/api", Router().use(news).use(user))
   .use(
     helmet({
       contentSecurityPolicy: {
@@ -28,4 +30,4 @@ const app = express()
     })
   );
 
-module.exports = app;
+export default app;

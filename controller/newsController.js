@@ -2,8 +2,8 @@
 /* eslint-disable import/extensions */
 /* eslint-disable no-await-in-loop */
 // controllers/newsController.js
-const { waitForTimeout } = require("../comm/utils");
-const puppeteer = require("puppeteer");
+import { launch } from "puppeteer";
+import { waitForTimeout } from "../comm/utils.js";
 
 /**
  * 요청 유효성 검사
@@ -39,7 +39,7 @@ const validateRequest = (req, res) => {
  * @param {Object} req - 요청 정보
  * @param {Object} res - 응답 정보
  */
-exports.getNews = async (req, res) => {
+export async function getNews(req, res) {
   if (!validateRequest(req, res)) return;
   const { queries, startDate, endDate } = req.query;
 
@@ -52,7 +52,7 @@ exports.getNews = async (req, res) => {
   });
 
   try {
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await launch({ headless: true });
     const maxScrollAttempts = 100;
 
     const tasks = searchUrls.map(async (url, index) => {
@@ -141,4 +141,4 @@ exports.getNews = async (req, res) => {
       error: "크롤링 오류 발생",
     });
   }
-};
+}

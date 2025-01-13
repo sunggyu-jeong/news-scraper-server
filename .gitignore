@@ -79,6 +79,8 @@ web_modules/
 .env.test.local
 .env.production.local
 .env.local
+.env.dev
+.env.prod
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -139,3 +141,5 @@ dist
 .svelte-kit
 
 public/database/sequelize.js
+
+secret.js

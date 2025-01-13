@@ -1,5 +1,5 @@
-const { DataTypes, Sequelize } = require("sequelize");
-const sequelize = require("../sequelize");
+import { DataTypes, Sequelize } from "sequelize";
+import sequelize from "../sequelize.js";
 
 const tbl_search_history = sequelize.define("tbl_search_history", {
   id: {
@@ -17,5 +17,5 @@ const tbl_search_history = sequelize.define("tbl_search_history", {
     defaultValue: DataTypes.NOW,
   },
 });
- 
-module.exports = tbl_search_history;
+
+export default tbl_search_history;

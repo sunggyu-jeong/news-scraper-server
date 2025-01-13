@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+import { genSalt, hash } from "bcrypt";
 
 /**
  * 지정된 시간 후에 실행 되는 Promise를 생성합니다.
@@ -20,6 +20,6 @@ export const waitForTimeout = (timeout) =>
  */
 export const hashedPassword = async (password) => {
   const saltRounds = 10;
-  const salt = await bcrypt.genSalt(saltRounds);
-  return await bcrypt.hash(password, salt);
+  const salt = await genSalt(saltRounds);
+  return hash(password, salt);
 };

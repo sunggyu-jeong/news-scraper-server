@@ -1,6 +1,6 @@
-const { DataTypes, Sequelize } = require("sequelize");
-const sequelize = require("../sequelize");
-const { hashedPassword } = require("../../../comm/utils");
+import { DataTypes, Sequelize } from "sequelize";
+import { hashedPassword } from "../../../comm/utils.js";
+import sequelize from "../sequelize.js";
 
 const tbl_users = sequelize.define("tbl_users", {
   id: {
@@ -45,4 +45,4 @@ tbl_users.beforeUpdate(async (user) => {
   }
 });
 
-module.exports = tbl_users;
+export default tbl_users;

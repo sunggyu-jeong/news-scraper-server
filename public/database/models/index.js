@@ -1,6 +1,6 @@
-const sequelize = require("../sequelize");
-const tbl_search_history = require("./tbl_search_history");
-const tbl_users = require("./tbl_users");
+import sequelize from "../sequelize.js";
+import tbl_search_history from "./tbl_search_history.js";
+import tbl_users from "./tbl_users.js";
 
 tbl_users.hasMany(tbl_search_history, {
   foreignKey: "id",
@@ -9,4 +9,4 @@ tbl_users.hasMany(tbl_search_history, {
 });
 tbl_search_history.belongsTo(tbl_users, { foreignKey: "id", targetKey: "id" });
 
-module.exports = { tbl_users, tbl_search_history, sequelize };
+export default sequelize;
