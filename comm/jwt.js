@@ -4,13 +4,19 @@ import {
   REFRESH_TOKEN_SECRET_KEY,
 } from "../secret.js";
 
+/**
+ * JWT 토큰 생성(Refresh token, access token)
+ *
+ * @param {Object} user 사용자 정보
+ * @returns 생성된 access token, refresh token 반환
+ */
 export const generateToken = (user) => {
   return {
     accessToken: jwt.sign(user, ACCESS_TOKEN_SECRET_KEY, {
-      expiresIn: "1m",
+      expiresIn: "15m",
     }),
     refreshToken: jwt.sign(user, REFRESH_TOKEN_SECRET_KEY, {
-      expiresIn: "2m",
+      expiresIn: "7d",
     }),
   };
 };
@@ -19,7 +25,7 @@ export const generateToken = (user) => {
  * 리프래시 토큰이 유효한지 확인
  *
  * @param {String} token 리프래시 토큰
- * @returns
+ * @returns 복호화 된 리프래시 토큰 반환
  */
 export const verifyRefreshToken = (token) => {
   try {
