@@ -1,11 +1,21 @@
 import jwt from "jsonwebtoken";
 import { config } from "dotenv";
 import { ACCESS_TOKEN_SECRET_KEY } from "../secret.js";
+import { isEmpty } from "../comm/utils.js";
 
 config();
 
 export const verifyAccessToken = (req, res, next) => {
   try {
+    console.log(">>>>>>>> JWT Verify Start", req.headers.authorization);
+    if (
+      isEmpty(req.headers.authorization) ||
+      !req.headers.authorization.startsWith("Bearer ")
+    ) {
+      throw new Error(
+        "Bearer access token doesn't exist or is not in Bearer format."
+      );
+    }
     jwt.verify(
       req.headers.authorization.split(" ")[1],
       ACCESS_TOKEN_SECRET_KEY
@@ -15,18 +25,23 @@ export const verifyAccessToken = (req, res, next) => {
     console.log(">>>>>>>> JWT Verify Error:", error);
 
     if (error.name === "TokenExpiredError") {
-      return res.status(401).json({
-        status: 401,
-        message: "만료된 엑세스 토큰입니다.",
+      return res.status(403).json({
+        status: 403,
+        message: "유효하지 않은 세션입니다.",
         messageDev: "JWT Verify Error: TokenExpiredError",
       });
     }
     if (error.name === "JsonWebTokenError") {
-      return res.status(401).json({
-        status: 401,
-        message: "유효하지 않은 엑세스 토큰입니다.",
+      return res.status(403).json({
+        status: 403,
+        message: "유효하지 않은 세션입니다.",
         messageDev: "JWT Verify Error: JsonWebTokenError",
       });
     }
+    return res.status(403).json({
+      status: 403,
+      message: "유효하지 않은 세션입니다.",
+      messageDev: "JWT Verify Error: access token doesn't exist",
+    });
   }
 };

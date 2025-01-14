@@ -22,14 +22,16 @@ export const generateToken = (user) => {
 };
 
 /**
- * 리프래시 토큰이 유효한지 확인
+ * 토큰이 유효한지 확인
  *
- * @param {String} token 리프래시 토큰
- * @returns 복호화 된 리프래시 토큰 반환
+ * @param {String} token 검사하려는 토큰
+ * @param {String} key 토큰 키
+ * @returns 복호화 된 토큰 반환
  */
-export const verifyRefreshToken = (token) => {
+export const verifyToken = (token, key) => {
   try {
-    return jwt.verify(token, REFRESH_TOKEN_SECRET_KEY);
+    console.log(">>>>>>>> JWT Verify Start", token, key);
+    return jwt.verify(token, key);
   } catch (error) {
     console.log(">>>>>>>> JWT Verify Error:", error);
     throw new Error("Invalid refresh token");

@@ -1,7 +1,11 @@
-import { generateToken, verifyRefreshToken } from "../comm/jwt.js";
+import { generateToken, verifyToken } from "../comm/jwt.js";
 import { compareSync } from "bcrypt";
 import tbl_users from "../public/database/models/tbl_users.js";
 import { isEmpty } from "../comm/utils.js";
+import {
+  ACCESS_TOKEN_SECRET_KEY,
+  REFRESH_TOKEN_SECRET_KEY,
+} from "../secret.js";
 
 export async function getUser(req, res) {
   try {
@@ -143,11 +147,39 @@ export async function deleteUser(req, res) {
   }
 }
 
+export function checkAuth(req, res) {
+  try {
+    if (
+      isEmpty(req.headers.authorization) ||
+      !req.headers.authorization.startsWith("Bearer ")
+    ) {
+      throw new Error(
+        "Bearer access token doesn't exist or is not in Bearer format."
+      );
+    }
+    const accessToken = req.headers.authorization?.split(" ")[1];
+    verifyToken(accessToken, ACCESS_TOKEN_SECRET_KEY);
+
+    res.status(200).json({
+      status: 200,
+      message: "success",
+      messageDev: "OAuth Access Token 유효성 검증 성공",
+    });
+  } catch (error) {
+    console.log(">>>>>>>> OAuth Refresh Token 통신 중 오류 발생", error);
+    res.status(403).json({
+      status: 403,
+      message: "유효하지 않은 세션입니다.",
+      messageDev: "OAuth Refresh Token 통신 실패",
+    });
+  }
+}
+
 export async function silentRefresh(req, res) {
   try {
     const refreshToken = req.cookies.refreshToken;
     // 리프래시 토큰이 유효한지 검증 및 복호화
-    const decodedValue = verifyRefreshToken(refreshToken);
+    const decodedValue = verifyToken(refreshToken, REFRESH_TOKEN_SECRET_KEY);
 
     const tokensInfomation = {
       userId: decodedValue.userId,
