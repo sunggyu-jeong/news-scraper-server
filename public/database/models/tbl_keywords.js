@@ -1,14 +1,18 @@
 import { DataTypes, Sequelize } from "sequelize";
 import sequelize from "../sequelize.js";
 
-const tbl_search_history = sequelize.define("tbl_search_history", {
+const tbl_keywords = sequelize.define("tbl_keywords", {
   id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+  },
+  keyword_id: {
     type: Sequelize.INTEGER,
     primaryKey: true,
     autoIncrement: true,
     allowNull: false,
   },
-  query: {
+  keyword: {
     type: DataTypes.STRING,
     allowNull: false,
   },
@@ -18,4 +22,4 @@ const tbl_search_history = sequelize.define("tbl_search_history", {
   },
 });
 
-export default tbl_search_history;
+export default tbl_keywords;
