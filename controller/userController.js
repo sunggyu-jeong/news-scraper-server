@@ -7,11 +7,12 @@ import {
   REFRESH_TOKEN_SECRET_KEY,
 } from "../secret.js";
 
-export async function getUser(req, res) {
+export async function postLogin(req, res) {
   try {
+    console.log(">>>>>>>> POST /user/login Start", req);
     // ID로 유저 정보 조회
     const user = await tbl_users.findOne({
-      where: { userId: req.query.userId },
+      where: { userId: req.body.userId },
       attributes: ["userId", "password", "createdAt"],
     });
     // 유저 정보가 존재하지 않는 경우 404 Not Found
@@ -23,7 +24,7 @@ export async function getUser(req, res) {
       });
     }
     // 사용자가 전달한 비밀번호와 데이터베이스 비밀번호 정보가 일치하는 지 확인
-    if (compareSync(req.query.password, user.password)) {
+    if (compareSync(req.body.password, user.password)) {
       const tokensInfomation = {
         userId: user.userId,
         created_at: user.created_at,
@@ -43,7 +44,7 @@ export async function getUser(req, res) {
           accessToken: accessToken,
         },
       });
-    } else if (!compareSync(req.query.password, user.password)) {
+    } else if (!compareSync(req.body.password, user.password)) {
       // 비밀번호가 일치하지 않는 경우 401 Unauthorized
       return res.status(401).json({
         status: 401,

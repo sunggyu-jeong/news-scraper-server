@@ -1,15 +1,15 @@
 import { Router } from "express";
 import {
-  getUser,
   postUser,
   putUser,
   deleteUser,
   silentRefresh,
   checkAuth,
+  postLogin,
 } from "../controller/userController.js";
 const router = Router();
 
-router.get("/user", getUser);
+router.post("/user/login", postLogin);
 router.post("/user/refresh", silentRefresh);
 router.get("/check", checkAuth);
 router.post("/user", postUser);
