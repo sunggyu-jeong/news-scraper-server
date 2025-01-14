@@ -9,7 +9,7 @@ const tbl_users = sequelize.define("tbl_users", {
     autoIncrement: true,
     allowNull: false,
   },
-  user_id: {
+  userId: {
     type: DataTypes.STRING,
     allowNull: false,
   },
