@@ -3,6 +3,7 @@ import helmet from "helmet";
 import cors from "cors";
 import news from "./routes/news.js";
 import user from "./routes/user.js";
+import keyword from "./routes/keyword.js";
 import sequelize from "./public/database/models/index.js";
 import cookieParser from "cookie-parser";
 
@@ -14,9 +15,14 @@ sequelize
 const app = express()
   .use(json())
   .use(helmet())
-  .use(cors())
+  .use(
+    cors({
+      origin: ["http://localhost:8080", "https://localhost:3000"],
+      credentials: true,
+    })
+  )
   .use(cookieParser())
-  .use("/api", Router().use(news).use(user))
+  .use("/api", Router().use(news).use(user).use(keyword))
   .use(
     helmet({
       contentSecurityPolicy: {
