@@ -12,6 +12,7 @@ const tbl_users = sequelize.define("tbl_users", {
   userId: {
     type: DataTypes.STRING,
     allowNull: false,
+    unique: true,
   },
   password: {
     type: DataTypes.STRING,

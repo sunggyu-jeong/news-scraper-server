@@ -6,6 +6,8 @@ import {
   ACCESS_TOKEN_SECRET_KEY,
   REFRESH_TOKEN_SECRET_KEY,
 } from "../secret.js";
+import tbl_default_keywords from "../public/database/models/tbl_default_keywords.js";
+import tbl_keywords from "../public/database/models/tbl_keywords.js";
 
 export async function postLogin(req, res) {
   try {
@@ -13,7 +15,7 @@ export async function postLogin(req, res) {
     // ID로 유저 정보 조회
     const user = await tbl_users.findOne({
       where: { userId: req.body.userId },
-      attributes: ["userId", "password", "createdAt"],
+      attributes: ["id", "userId", "password", "createdAt"],
     });
     // 유저 정보가 존재하지 않는 경우 404 Not Found
     if (isEmpty(user)) {
@@ -26,16 +28,17 @@ export async function postLogin(req, res) {
     // 사용자가 전달한 비밀번호와 데이터베이스 비밀번호 정보가 일치하는 지 확인
     if (compareSync(req.body.password, user.password)) {
       const tokensInfomation = {
+        id: user.id,
         userId: user.userId,
         created_at: user.created_at,
       };
       const tokens = generateToken(tokensInfomation);
+      const accessToken = tokens.accessToken;
       res.cookie("refreshToken", tokens.refreshToken, {
         expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7일
         httpOnly: true,
         path: "/",
       });
-      const accessToken = tokens.accessToken;
       return res.status(200).json({
         status: 200,
         message: "success",
@@ -63,9 +66,20 @@ export async function postLogin(req, res) {
   }
 }
 
+export async function postLogout(params) {}
+
 export async function postUser(req, res) {
   try {
-    const user = await tbl_users.create(req.body);
+    const response = await tbl_default_keywords.findAll({
+      attributes: ["keyword"],
+    });
+    const user = await tbl_users.create(req.body, { ignoreDuplicates: true });
+    if (!isEmpty(response.data)) {
+      const keywords = response.data.map((el) => {
+        return { keyword: el, id: user.id };
+      });
+      await tbl_keywords.bulkCreate(keywords);
+    }
     res.status(201).json({
       status: 201,
       message: "success",
@@ -178,6 +192,7 @@ export function checkAuth(req, res) {
 
 export async function silentRefresh(req, res) {
   try {
+    consoleㅇ.log(">>>>>>>>>>", req.cookies);
     const refreshToken = req.cookies.refreshToken;
     // 리프래시 토큰이 유효한지 검증 및 복호화
     const decodedValue = verifyToken(refreshToken, REFRESH_TOKEN_SECRET_KEY);
