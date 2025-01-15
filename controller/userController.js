@@ -70,13 +70,12 @@ export async function postLogout(params) {}
 
 export async function postUser(req, res) {
   try {
-    const response = await tbl_default_keywords.findAll({
-      attributes: ["keyword"],
-    });
+    const response = await tbl_default_keywords.findAll();
     const user = await tbl_users.create(req.body, { ignoreDuplicates: true });
-    if (!isEmpty(response.data)) {
-      const keywords = response.data.map((el) => {
-        return { keyword: el, id: user.id };
+    if (!isEmpty(response)) {
+      // `keyword`만 추출
+      const keywords = response.map((el) => {
+        return { keyword: el.dataValues.keyword, id: user.id };
       });
       await tbl_keywords.bulkCreate(keywords);
     }
@@ -192,12 +191,13 @@ export function checkAuth(req, res) {
 
 export async function silentRefresh(req, res) {
   try {
-    consoleㅇ.log(">>>>>>>>>>", req.cookies);
+    console.log(">>>>>>>>>>", req.cookies);
     const refreshToken = req.cookies.refreshToken;
     // 리프래시 토큰이 유효한지 검증 및 복호화
     const decodedValue = verifyToken(refreshToken, REFRESH_TOKEN_SECRET_KEY);
 
     const tokensInfomation = {
+      id: decodedValue.id,
       userId: decodedValue.userId,
       created_at: decodedValue.created_at,
     };

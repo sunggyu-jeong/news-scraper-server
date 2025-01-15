@@ -1,6 +1,3 @@
-/* eslint-disable import/order */
-/* eslint-disable import/extensions */
-/* eslint-disable no-await-in-loop */
 // controllers/newsController.js
 import { launch } from "puppeteer";
 import { waitForTimeout } from "../comm/utils.js";
