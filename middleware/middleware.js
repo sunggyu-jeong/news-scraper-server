@@ -24,24 +24,15 @@ export const verifyAccessToken = (req, res, next) => {
   } catch (error) {
     console.log(">>>>>>>> JWT Verify Error:", error);
 
-    if (error.name === "TokenExpiredError") {
-      return res.status(403).json({
-        status: 403,
-        message: "유효하지 않은 세션입니다.",
-        messageDev: "JWT Verify Error: TokenExpiredError",
-      });
-    }
-    if (error.name === "JsonWebTokenError") {
-      return res.status(403).json({
-        status: 403,
-        message: "유효하지 않은 세션입니다.",
-        messageDev: "JWT Verify Error: JsonWebTokenError",
-      });
-    }
+    const errorMessage =
+      error.name === "TokenExpiredError" || error.name === "JsonWebTokenError"
+        ? `JWT Verify Error: ${error.name}`
+        : "JWT Verify Error: access token doesn't exist";
+
     return res.status(403).json({
       status: 403,
       message: "유효하지 않은 세션입니다.",
-      messageDev: "JWT Verify Error: access token doesn't exist",
+      messageDev: errorMessage,
     });
   }
 };

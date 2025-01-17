@@ -6,8 +6,11 @@ import {
   postDefaultKeywords,
   postKeywords,
 } from "../controller/KeywordController.js";
+import { verifyAccessToken } from "../middleware/middleware.js";
 
 const router = Router();
+
+router.use(verifyAccessToken);
 
 router.get("/keywords", getKeywords);
 router.post("/keywords", postKeywords);

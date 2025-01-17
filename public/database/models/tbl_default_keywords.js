@@ -2,7 +2,7 @@ import { DataTypes, Sequelize } from "sequelize";
 import sequelize from "../sequelize.js";
 
 const tbl_default_keywords = sequelize.define("tbl_default_keywords", {
-  keyword_id: {
+  keywordId: {
     type: Sequelize.INTEGER,
     primaryKey: true,
     autoIncrement: true,

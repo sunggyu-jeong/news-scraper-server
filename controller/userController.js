@@ -224,7 +224,7 @@ export async function silentRefresh(req, res) {
     res.cookie("refreshToken", "", { expires: new Date(0), httpOnly: true });
     res.status(409).json({
       status: 409,
-      message: "OAuth Refresh Token 발행 중 오류가 발생했습니다.",
+      message: "세션이 만료되었습니다. 다시 로그인 해 주세요.",
       messageDev: "OAuth Refresh Token 발행 실패",
     });
   }

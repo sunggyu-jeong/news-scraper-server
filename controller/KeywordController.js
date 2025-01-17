@@ -12,13 +12,13 @@ export async function getKeywords(req, res) {
     );
     const keywords = await tbl_keywords.findAll({
       where: { id: decryptedAccessToken.id },
-      attributes: ["keyword"],
+      attributes: ["keywordId", "keyword", "createdAt"],
     });
     res.status(200).json({
       status: 200,
       message: "success",
       messageDev: "키워드 조회 성공",
-      data: keywords.map((el) => el.keyword),
+      data: keywords,
     });
   } catch (error) {
     console.log(">>>>>>>> 키워드 조회 중 오류 발생", error);
@@ -59,7 +59,22 @@ export async function postKeywords(req, res) {
 
 export async function deleteKeywords(req, res) {
   try {
-    await tbl_keywords.destroy({ where: { id: decryptedAccessToken.id } });
+    console.log(
+      ">>>>>>>> 키워드 삭제 요청",
+      req.query,
+      typeof req.query.keywordIds
+    );
+    const response = await tbl_keywords.destroy({
+      where: { keywordId: req.query.keywordIds },
+    });
+    console.log(">>>>>>>>>>>>>>>>>>>>", response);
+    if (response === 0) {
+      return res.status(404).json({
+        status: 404,
+        message: "삭제된 키워드가 없습니다.",
+        messageDev: "키워드 삭제 실패: 요청한 삭제 코드가 없음.",
+      });
+    }
     res.status(200).json({
       status: 200,
       message: "success",

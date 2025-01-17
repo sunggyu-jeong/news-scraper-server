@@ -6,7 +6,7 @@ const tbl_keywords = sequelize.define("tbl_keywords", {
     type: DataTypes.INTEGER,
     primaryKey: true,
   },
-  keyword_id: {
+  keywordId: {
     type: Sequelize.INTEGER,
     primaryKey: true,
     autoIncrement: true,

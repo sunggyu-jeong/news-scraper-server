@@ -30,7 +30,7 @@ export const generateToken = (user) => {
  */
 export const verifyToken = (token, key) => {
   try {
-    console.log(">>>>>>>> JWT Verify Start", token, key);
+    console.log(">>>>>>>> JWT Verify Start", token);
     return jwt.verify(token, key);
   } catch (error) {
     console.log(">>>>>>>> JWT Verify Error:", error);
