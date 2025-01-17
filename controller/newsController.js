@@ -40,7 +40,7 @@ export async function getNews(req, res) {
   if (!validateRequest(req, res)) return;
   const { queries, startDate, endDate } = req.query;
 
-  // 여러 검색어에 대해 병렬 처리
+  // 검색 URL 생성
   const searchUrls = queries.split(",").map((query) => {
     return `https://search.naver.com/search.naver?where=news&query=${query}&ds=${startDate}&de=${endDate}&sort=0&field=0&photo=0&nso=so%3Ar%2Cp%3Afrom${startDate.replace(
       /\./g,
@@ -49,18 +49,31 @@ export async function getNews(req, res) {
   });
 
   try {
-    const browser = await launch({ headless: true });
-    const maxScrollAttempts = 100;
+    const browser = await launch({
+      headless: true,
+      defaultViewport: false,
+      args: ["--start-maximized"],
+    });
+    const maxScrollAttempts = 10;
+    const maxConcurrentTabs = 2; // 최대 탭 개수(두개 이상 설정 시 검색이 제대로 이루어지지 않음..)
+    const allNews = [];
 
-    const tasks = searchUrls.map(async (url, index) => {
+    /**
+     * 단일 탭에서 크롤링 작업 수행
+     * @param {string} url - 크롤링할 URL
+     * @returns {Array} - 크롤링된 뉴스 데이터
+     */
+    const processTab = async (url) => {
       const page = await browser.newPage();
       await page.setUserAgent(
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
       );
-
-      console.log(`Search #${index + 1} 시작: ${url}`);
-      await page.goto(url, { waitUntil: "networkidle2" });
-
+      console.log(`크롤링 시작: ${url}`);
+      await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
+      await page.waitForSelector("#main_pack", {
+        visible: true,
+        timeout: 60000,
+      });
       let scrollAttempts = 0;
       let previousHeight = await page.evaluate(
         () => document.body.scrollHeight
@@ -70,19 +83,19 @@ export async function getNews(req, res) {
         await page.evaluate(() =>
           window.scrollTo(0, document.body.scrollHeight)
         );
-        await waitForTimeout(300); // 스크롤 로딩 대기
+        await waitForTimeout(800); // 스크롤 로딩 대기
         const newHeight = await page.evaluate(() => document.body.scrollHeight);
         console.log(
           `스크롤 시도 #${scrollAttempts + 1}, ${previousHeight}, ${newHeight}`
         );
-
         if (previousHeight === newHeight) {
-          break; // 더 이상 스크롤할 내용이 없으면 종료
+          break;
         }
 
         previousHeight = newHeight;
         scrollAttempts += 1;
       }
+
       const queryParam = url.match(/query=([^&]*)/);
       const query = queryParam[1]
         .split(",")
@@ -90,11 +103,10 @@ export async function getNews(req, res) {
         .join(",");
 
       // 뉴스 데이터 추출
-      const newsList = await page.evaluate((kwd) => {
+      const newsList = await page.evaluate((keyword) => {
         const newsItems = [];
         document.querySelectorAll("#main_pack .list_news .bx").forEach((el) => {
           const newsType = "네이버뉴스";
-          const keyword = kwd;
           const source =
             el.querySelector(".info_group .press")?.innerText || "";
           const title = el.querySelector(".news_tit")?.innerText || "";
@@ -116,11 +128,16 @@ export async function getNews(req, res) {
         return newsItems;
       }, query);
 
+      await page.close();
       return newsList;
-    });
+    };
 
-    // 병렬로 모든 작업이 완료될 때까지 기다림
-    const allNews = await Promise.all(tasks);
+    // 병렬 실행 제한을 적용하여 URL 처리
+    for (let i = 0; i < searchUrls.length; i += maxConcurrentTabs) {
+      const batchUrls = searchUrls.slice(i, i + maxConcurrentTabs);
+      const batchResults = await Promise.all(batchUrls.map(processTab));
+      allNews.push(...batchResults.flat());
+    }
 
     await browser.close();
 
@@ -128,7 +145,7 @@ export async function getNews(req, res) {
       status: 200,
       message: "success",
       messageDev: "뉴스 데이터 크롤링 성공",
-      data: allNews.flat(), // 여러 검색어의 결과를 합침
+      data: allNews,
     });
   } catch (error) {
     console.error("크롤링 중 오류 발생:", error);
