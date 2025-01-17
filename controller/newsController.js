@@ -32,110 +32,148 @@ const validateRequest = (req, res) => {
 };
 
 /**
- * 뉴스 크롤링 로직
- * @param {Object} req - 요청 정보
- * @param {Object} res - 응답 정보
+ * <네이버뉴스> 검색하려는 URL 정렬
+ *
+ * @param {string} queries 검색어
+ * @param {String} startDate 검색 시작일
+ * @param {string} endDate 검색 종료일
+ * @returns {Array<string>} 검색 URL 목록 반환
  */
-export async function getNews(req, res) {
-  if (!validateRequest(req, res)) return;
-  const { queries, startDate, endDate } = req.query;
-
-  // 검색 URL 생성
-  const searchUrls = queries.split(",").map((query) => {
+const generateSearchUrls = (queries, startDate, endDate) => {
+  return queries.split(",").map((query) => {
     return `https://search.naver.com/search.naver?where=news&query=${query}&ds=${startDate}&de=${endDate}&sort=0&field=0&photo=0&nso=so%3Ar%2Cp%3Afrom${startDate.replace(
       /\./g,
       ""
     )}to${endDate.replace(/\./g, "")}`;
   });
+};
+
+/**
+ * 페이지의 맨 아래에 도달하거나 최대 스크롤 시도 횟수에 도달할 때까지 더 많은 콘텐츠를 로드하기 위해 페이지를 스크롤
+ *
+ * @param {object} page - 스크롤할 Puppeteer 페이지 객체.
+ * @param {number} [maxScrollAttempts=20] - 최대 스크롤 시도 횟수. 서버 부하를 막기 위해 디폴트 20 설정
+ * @returns {Promise<void>} - 스크롤이 완료되면 resolve되는 Promise.
+ */
+const scrollPageToLoad = async (page, maxScrollAttempts = 20) => {
+  let scrollAttempts = 0;
+  let previousHeight = await page.evaluate(() => document.body.scrollHeight);
+
+  while (scrollAttempts <= maxScrollAttempts) {
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+
+    const newHeight = await page.evaluate(() => document.body.scrollHeight);
+    console.log(
+      `스크롤 시도 #${scrollAttempts + 1}, ${previousHeight}, ${newHeight}`
+    );
+    if (previousHeight === newHeight) {
+      break;
+    }
+
+    previousHeight = newHeight;
+    scrollAttempts += 1;
+  }
+};
+
+/**
+ * 뉴스 데이터를 크롤링하기 위해 브라우저의 탭 처리
+ *
+ * @param {object} browser - Puppeteer 브라우저 인스턴스.
+ * @param {string} url - 스크랩할 페이지의 URL.
+ * @returns {Promise<Array>} - 뉴스 데이터 배열로 resolve되는 Promise.
+ */
+const processTab = async (browser, url) => {
+  const page = await browser.newPage();
+  await page.setUserAgent(
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+  );
+  console.log(`크롤링 시작: ${url}`);
+  await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
+  // 크롬 환경에서 페이지 로딩이 완료되기를 기다림.(최대 1분)
+  await page.waitForSelector("#main_pack", { visible: true, timeout: 60000 });
+
+  // 페이지 스크롤링
+  await scrollPageToLoad(page);
+
+  // 쿼리 파라미터 추출 >> 검색어만 별도로 가져오기 위한 설정
+  const queryParam = url.match(/query=([^&]*)/);
+  const query = queryParam[1]
+    .split(",")
+    .filter((value, index, self) => self.indexOf(value) === index)
+    .join(",");
+
+  // 뉴스 데이터 추출
+  const newsList = await extractNewsData(page, query);
+
+  await page.close();
+  return newsList;
+};
+
+/**
+ * 스크롤이 완료된 페이지에서 제공된 정보를 기반으로 뉴스 데이터 추출
+ *
+ * @param {object} page - 스크롤이 완료된 Puppeteer 페이지 객체.
+ * @param {string} keyword - 검색 키워드 정보
+ * @returns {Promise<Array>} 뉴스 내 원하는 정보반 추출한 배열
+ *
+ *   - {string} newsType - 뉴스 유형
+ *   - {string} keyword - 검색 키워드
+ *   - {string} source - 뉴스 출처
+ *   - {string} title - 뉴스 제목
+ *   - {string} link - 뉴스 링크
+ *   - {string} description - 뉴스 설명
+ *   - {string} date - 뉴스 날짜
+ */
+const extractNewsData = async (page, keyword) => {
+  return await page.evaluate((keyword) => {
+    const newsItems = [];
+    document.querySelectorAll("#main_pack .list_news .bx").forEach((el) => {
+      const newsType = "네이버뉴스";
+      const source = el.querySelector(".info_group .press")?.innerText || "";
+      const title = el.querySelector(".news_tit")?.innerText || "";
+      const link = el.querySelector(".news_tit")?.href || "";
+      const description = el.querySelector(".news_dsc")?.innerText || "";
+      const date = el.querySelector(".info_group .date")?.innerText || "";
+      if (title && link) {
+        newsItems.push({
+          newsType,
+          keyword,
+          source,
+          title,
+          link,
+          description,
+          date,
+        });
+      }
+    });
+    return newsItems;
+  }, keyword);
+};
+
+// 뉴스 데이터를 크롤링하는 메소드
+export async function getNews(req, res) {
+  if (!validateRequest(req, res)) return;
+  const { queries, startDate, endDate } = req.query;
+
+  // 검색 URL 생성
+  const searchUrls = generateSearchUrls(queries, startDate, endDate);
 
   try {
     const browser = await launch({
       headless: true,
-      defaultViewport: false,
+      defaultViewport: null,
       args: ["--start-maximized"],
     });
-    const maxScrollAttempts = 10;
-    const maxConcurrentTabs = 2; // 최대 탭 개수(두개 이상 설정 시 검색이 제대로 이루어지지 않음..)
+    // 최대 탭 개수 2개, 3개 이상 실행 시 검색기록을 제대로 가져오지 못함.
+    const maxConcurrentTabs = 2;
     const allNews = [];
-
-    /**
-     * 단일 탭에서 크롤링 작업 수행
-     * @param {string} url - 크롤링할 URL
-     * @returns {Array} - 크롤링된 뉴스 데이터
-     */
-    const processTab = async (url) => {
-      const page = await browser.newPage();
-      await page.setUserAgent(
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-      );
-      console.log(`크롤링 시작: ${url}`);
-      await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
-      await page.waitForSelector("#main_pack", {
-        visible: true,
-        timeout: 60000,
-      });
-      let scrollAttempts = 0;
-      let previousHeight = await page.evaluate(
-        () => document.body.scrollHeight
-      );
-
-      while (scrollAttempts <= maxScrollAttempts) {
-        await page.evaluate(() =>
-          window.scrollTo(0, document.body.scrollHeight)
-        );
-        await waitForTimeout(800); // 스크롤 로딩 대기
-        const newHeight = await page.evaluate(() => document.body.scrollHeight);
-        console.log(
-          `스크롤 시도 #${scrollAttempts + 1}, ${previousHeight}, ${newHeight}`
-        );
-        if (previousHeight === newHeight) {
-          break;
-        }
-
-        previousHeight = newHeight;
-        scrollAttempts += 1;
-      }
-
-      const queryParam = url.match(/query=([^&]*)/);
-      const query = queryParam[1]
-        .split(",")
-        .filter((value, index, self) => self.indexOf(value) === index)
-        .join(",");
-
-      // 뉴스 데이터 추출
-      const newsList = await page.evaluate((keyword) => {
-        const newsItems = [];
-        document.querySelectorAll("#main_pack .list_news .bx").forEach((el) => {
-          const newsType = "네이버뉴스";
-          const source =
-            el.querySelector(".info_group .press")?.innerText || "";
-          const title = el.querySelector(".news_tit")?.innerText || "";
-          const link = el.querySelector(".news_tit")?.href || "";
-          const description = el.querySelector(".news_dsc")?.innerText || "";
-          const date = el.querySelector(".info_group .date")?.innerText || "";
-          if (title && link) {
-            newsItems.push({
-              newsType,
-              keyword,
-              source,
-              title,
-              link,
-              description,
-              date,
-            });
-          }
-        });
-        return newsItems;
-      }, query);
-
-      await page.close();
-      return newsList;
-    };
 
     // 병렬 실행 제한을 적용하여 URL 처리
     for (let i = 0; i < searchUrls.length; i += maxConcurrentTabs) {
       const batchUrls = searchUrls.slice(i, i + maxConcurrentTabs);
-      const batchResults = await Promise.all(batchUrls.map(processTab));
+      const batchResults = await Promise.all(
+        batchUrls.map((url) => processTab(browser, url))
+      );
       allNews.push(...batchResults.flat());
     }
 
@@ -148,7 +186,7 @@ export async function getNews(req, res) {
       data: allNews,
     });
   } catch (error) {
-    console.error("크롤링 중 오류 발생:", error);
+    console.error("크롤링 중 오류 발생:", error.message, error.stack);
     res.status(500).json({
       status: 500,
       message: "크롤링 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
