@@ -1,14 +1,13 @@
 import { verifyToken } from "../comm/jwt.js";
 import tbl_default_keywords from "../public/database/models/tbl_default_keywords.js";
 import tbl_keywords from "../public/database/models/tbl_keywords.js";
-import { ACCESS_TOKEN_SECRET_KEY } from "../secret.js";
 
 export async function getKeywords(req, res) {
   try {
     const accessToken = req.headers.authorization?.split(" ")[1];
     const decryptedAccessToken = verifyToken(
       accessToken,
-      ACCESS_TOKEN_SECRET_KEY
+      process.env.ACCESS_TOKEN_SECRET_KEY
     );
     const keywords = await tbl_keywords.findAll({
       where: { id: decryptedAccessToken.id },
@@ -35,7 +34,7 @@ export async function postKeywords(req, res) {
     const accessToken = req.headers.authorization?.split(" ")[1];
     const decryptedAccessToken = verifyToken(
       accessToken,
-      ACCESS_TOKEN_SECRET_KEY
+      process.env.ACCESS_TOKEN_SECRET_KEY
     );
     const keywords = req.body.map((el) => {
       return { keyword: el, id: decryptedAccessToken.id };

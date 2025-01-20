@@ -6,6 +6,9 @@ import user from "./routes/user.js";
 import keyword from "./routes/keyword.js";
 import sequelize from "./public/database/models/index.js";
 import cookieParser from "cookie-parser";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 sequelize
   .sync({ force: false })
@@ -17,10 +20,7 @@ const app = express()
   .use(helmet())
   .use(
     cors({
-      origin: [
-        "http://localhost:8080",
-        "https://localhost:3000",
-      ],
+      origin: ["http://localhost:8080", "https://localhost:3000"],
       credentials: true,
     })
   )

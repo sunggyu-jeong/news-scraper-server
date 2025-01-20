@@ -1,6 +1,5 @@
 import jwt from "jsonwebtoken";
 import { config } from "dotenv";
-import { ACCESS_TOKEN_SECRET_KEY } from "../secret.js";
 import { isEmpty } from "../comm/utils.js";
 
 config();
@@ -18,7 +17,7 @@ export const verifyAccessToken = (req, res, next) => {
     }
     jwt.verify(
       req.headers.authorization.split(" ")[1],
-      ACCESS_TOKEN_SECRET_KEY
+      process.env.ACCESS_TOKEN_SECRET_KEY
     );
     return next();
   } catch (error) {

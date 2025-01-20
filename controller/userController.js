@@ -2,10 +2,6 @@ import { generateToken, verifyToken } from "../comm/jwt.js";
 import { compareSync } from "bcrypt";
 import tbl_users from "../public/database/models/tbl_users.js";
 import { isEmpty } from "../comm/utils.js";
-import {
-  ACCESS_TOKEN_SECRET_KEY,
-  REFRESH_TOKEN_SECRET_KEY,
-} from "../secret.js";
 import tbl_default_keywords from "../public/database/models/tbl_default_keywords.js";
 import tbl_keywords from "../public/database/models/tbl_keywords.js";
 
@@ -172,7 +168,7 @@ export function checkAuth(req, res) {
       );
     }
     const accessToken = req.headers.authorization?.split(" ")[1];
-    verifyToken(accessToken, ACCESS_TOKEN_SECRET_KEY);
+    verifyToken(accessToken, process.env.ACCESS_TOKEN_SECRET_KEY);
 
     res.status(200).json({
       status: 200,
@@ -194,7 +190,10 @@ export async function silentRefresh(req, res) {
     console.log(">>>>>>>>>>", req.cookies);
     const refreshToken = req.cookies.refreshToken;
     // 리프래시 토큰이 유효한지 검증 및 복호화
-    const decodedValue = verifyToken(refreshToken, REFRESH_TOKEN_SECRET_KEY);
+    const decodedValue = verifyToken(
+      refreshToken,
+      process.env.REFRESH_TOKEN_SECRET_KEY
+    );
 
     const tokensInfomation = {
       id: decodedValue.id,

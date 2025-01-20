@@ -1,8 +1,4 @@
 import jwt from "jsonwebtoken";
-import {
-  ACCESS_TOKEN_SECRET_KEY,
-  REFRESH_TOKEN_SECRET_KEY,
-} from "../secret.js";
 
 /**
  * JWT 토큰 생성(Refresh token, access token)
@@ -12,10 +8,10 @@ import {
  */
 export const generateToken = (user) => {
   return {
-    accessToken: jwt.sign(user, ACCESS_TOKEN_SECRET_KEY, {
+    accessToken: jwt.sign(user, process.env.ACCESS_TOKEN_SECRET_KEY, {
       expiresIn: "15m",
     }),
-    refreshToken: jwt.sign(user, REFRESH_TOKEN_SECRET_KEY, {
+    refreshToken: jwt.sign(user, process.env.REFRESH_TOKEN_SECRET_KEY, {
       expiresIn: "7d",
     }),
   };
