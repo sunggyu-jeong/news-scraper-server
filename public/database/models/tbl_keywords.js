@@ -15,7 +15,6 @@ const tbl_keywords = sequelize.define("tbl_keywords", {
   keyword: {
     type: DataTypes.STRING,
     allowNull: false,
-    unique: true,
   },
   createdAt: {
     type: DataTypes.DATE,
