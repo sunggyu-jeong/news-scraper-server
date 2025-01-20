@@ -28,7 +28,7 @@
 
 ### 설치
 ```bash
-1. **프로젝트 클론**
+1. 프로젝트 클론
 git clone https://github.com/sunggyu-jeong/news-scraper-server
 cd news-scraper-server
 
