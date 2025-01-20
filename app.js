@@ -17,7 +17,10 @@ const app = express()
   .use(helmet())
   .use(
     cors({
-      origin: ["http://localhost:8080", "https://localhost:3000"],
+      origin: [
+        "http://localhost:8080",
+        "https://localhost:3000",
+      ],
       credentials: true,
     })
   )

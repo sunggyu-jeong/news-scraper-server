@@ -140,6 +140,4 @@ dist
 # SvelteKit build / generate output
 .svelte-kit
 
-public/database/sequelize.js
-
 secret.js
