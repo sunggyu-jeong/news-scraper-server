@@ -1,7 +1,6 @@
 import express, { json, Router } from "express";
 import helmet from "helmet";
 import cors from "cors";
-import news from "./routes/news.js";
 import user from "./routes/user.js";
 import keyword from "./routes/keyword.js";
 import sequelize from "./public/database/models/index.js";
@@ -25,7 +24,7 @@ const app = express()
     })
   )
   .use(cookieParser())
-  .use("/api", Router().use(news).use(user).use(keyword))
+  .use("/api", Router().use(user).use(keyword))
   .use(
     helmet({
       contentSecurityPolicy: {

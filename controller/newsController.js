@@ -1,6 +1,5 @@
 // controllers/newsController.js
 import { launch } from "puppeteer";
-import { waitForTimeout } from "../comm/utils.js";
 
 /**
  * 요청 유효성 검사

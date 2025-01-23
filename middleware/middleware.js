@@ -16,7 +16,7 @@ export const verifyAccessToken = (req, res, next) => {
       );
     }
     jwt.verify(
-      req.headers.authorization.split(" ")[1],
+      req.headers.authorization.split(" ")[1] || "Bearer ",
       process.env.ACCESS_TOKEN_SECRET_KEY
     );
     return next();
