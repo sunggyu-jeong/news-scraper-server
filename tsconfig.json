@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES6", // ES6로 컴파일
+    "module": "CommonJS", // CommonJS 모듈 사용
+    "outDir": "./dist", // 컴파일된 파일을 dist 디렉토리에 저장
+    "rootDir": "./", // 루트 디렉토리에서 TypeScript 파일을 찾음
+    "strict": true, // 엄격한 타입 체크
+    "esModuleInterop": true, // ES 모듈과 CommonJS 모듈 간의 호환성
+    "forceConsistentCasingInFileNames": true, // 파일명 대소문자 일관성 유지
+    "skipLibCheck": true // 라이브러리 파일의 타입 검사 건너뛰기
+  },
+  "include": ["*.ts", "bin/*.ts"], // 루트 디렉토리와 bin 디렉토리의 모든 .ts 파일 포함
+  "exclude": ["node_modules", "dist"] // node_modules와 dist 폴더는 제외
+}

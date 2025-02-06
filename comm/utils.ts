@@ -1,4 +1,4 @@
-import { genSalt, hash } from "bcrypt";
+import { genSalt, hash } from 'bcrypt';
 
 /**
  * 주어진 값이 비어있는 지 확인합니다.
@@ -30,38 +30,29 @@ import { genSalt, hash } from "bcrypt";
  * isEmpty(42);               // returns false
  * isEmpty(true);             // returns false
  */
-export const isEmpty = (value) => {
+export const isEmpty = <T>(value: T): boolean => {
   /** 주어진 값이 null이거나 undefined인 경우 */
-  if (value === null || value === undefined) {
-    return true;
-  }
+  if (value === null || value === undefined) return true;
   /** 주어진 값이 문자열이고, 공백을 제거한 문자열이 빈값일 경우 */
-  if (typeof value === "string" && value.trim() === "") {
-    return true;
-  }
+  if (typeof value === 'string' && value.trim() === '') return true;
   /** 주어진 값이 배열이고, 배열의 길이가 0일 경우 */
-  if (Array.isArray(value) && value.length === 0) {
-    return true;
-  }
+  if (Array.isArray(value) && value.length === 0) return true;
   /** 주어진 값이 객체이고, 객체의 데이터가 빈 경우 */
   if (
-    typeof value === "object" &&
+    typeof value === 'object' &&
     !Array.isArray(value) &&
     Object.keys(value).length === 0
-  ) {
+  )
     return true;
-  }
   /** 주어진 값이 숫자이고, Nan 또는 0일 경우 */
   if (
-    typeof value === "number" &&
+    typeof value === 'number' &&
     (Number.isNaN(value) === true || value === 0)
-  ) {
+  )
     return true;
-  }
   /** 주어진 값이 불리언 이고, 값이 false일 경우 */
-  if (typeof value === "boolean" && value === false) {
-    return true;
-  }
+  if (typeof value === 'boolean' && value === false) return true;
+
   /** 위 주어진 케이스가 아닐경우, 값이 있다고 판단 */
   return false;
 };
@@ -73,7 +64,7 @@ export const isEmpty = (value) => {
  * @returns {Promise<void>} 지정된 시간 후에 해결되는 Promise.
  *
  */
-export const waitForTimeout = (timeout) =>
+export const waitForTimeout = <T>(timeout: number): Promise<T> =>
   new Promise((resolve) => {
     setTimeout(resolve, timeout);
   });
@@ -84,7 +75,7 @@ export const waitForTimeout = (timeout) =>
  * @param {Number} password 암호화를 진행하려는 비밀번호
  * @returns 암호화된 비밀번호 반환
  */
-export const hashedPassword = async (password) => {
+export const hashedPassword = async (password: string): Promise<string> => {
   const saltRounds = 10;
   const salt = await genSalt(saltRounds);
   return hash(password, salt);

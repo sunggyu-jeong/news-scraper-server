@@ -1,10 +1,10 @@
-import { DataTypes, Sequelize } from "sequelize";
-import { hashedPassword } from "../../../comm/utils.js";
-import sequelize from "../sequelize.js";
+import { DataTypes } from 'sequelize';
+import { hashedPassword } from '../../../comm/utils.js';
+import sequelize from '../sequelize.js';
 
-const tbl_users = sequelize.define("tbl_users", {
+const tbl_users = sequelize.define('tbl_users', {
   id: {
-    type: Sequelize.INTEGER,
+    type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true,
     allowNull: false,
@@ -25,22 +25,21 @@ const tbl_users = sequelize.define("tbl_users", {
   },
   createdAt: {
     type: DataTypes.DATE,
-    defaultValue: Sequelize.NOW,
+    defaultValue: DataTypes.NOW,
   },
   updatedAt: {
     type: DataTypes.DATE,
-    defaultValue: Sequelize.NOW,
+    defaultValue: DataTypes.NOW,
   },
 });
 
-tbl_users.beforeCreate(async (user) => {
+tbl_users.beforeCreate(async (user: any) => {
   const password = await hashedPassword(user.password);
-
   user.password = password;
 });
 
-tbl_users.beforeUpdate(async (user) => {
-  if (user.changed("password")) {
+tbl_users.beforeUpdate(async (user: any) => {
+  if (user.changed('password')) {
     const password = await hashedPassword(user.password);
     user.password = password;
   }

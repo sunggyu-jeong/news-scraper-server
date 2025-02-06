@@ -1,13 +1,13 @@
-import { DataTypes, Sequelize } from "sequelize";
-import sequelize from "../sequelize.js";
+import { DataTypes, Sequelize } from 'sequelize';
+import sequelize from '../sequelize.js';
 
-const tbl_keywords = sequelize.define("tbl_keywords", {
+const tbl_keywords = sequelize.define('tbl_keywords', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
   },
   keywordId: {
-    type: Sequelize.INTEGER,
+    type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true,
     allowNull: false,
