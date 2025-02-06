@@ -6,7 +6,7 @@ import {
   silentRefresh,
   checkAuth,
   postLogin,
-} from '../controller/userController.js';
+} from '../controller/userController';
 const router = Router();
 
 router.post('/user/login', postLogin);

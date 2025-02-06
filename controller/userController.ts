@@ -1,9 +1,9 @@
-import { generateToken, verifyToken } from '../comm/jwt.js';
+import { generateToken, verifyToken } from '../comm/jwt';
 import { compareSync } from 'bcrypt';
-import tbl_users from '../public/database/models/tbl_users.js';
-import { isEmpty } from '../comm/utils.js';
-import tbl_default_keywords from '../public/database/models/tbl_default_keywords.js';
-import tbl_keywords from '../public/database/models/tbl_keywords.js';
+import tbl_users from '../public/database/models/tbl_users';
+import { isEmpty } from '../comm/utils';
+import tbl_default_keywords from '../public/database/models/tbl_default_keywords';
+import tbl_keywords from '../public/database/models/tbl_keywords';
 import { Request, Response } from 'express';
 
 export async function postLogin(req: Request, res: Response): Promise<void> {

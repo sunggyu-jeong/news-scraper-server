@@ -1,7 +1,7 @@
-import sequelize from "../sequelize.js";
-import tbl_default_keywords from "./tbl_default_keywords.js";
-import tbl_keywords from "./tbl_keywords.js";
-import tbl_users from "./tbl_users.js";
+import sequelize from "../sequelize";
+import tbl_default_keywords from "./tbl_default_keywords";
+import tbl_keywords from "./tbl_keywords";
+import tbl_users from "./tbl_users";
 
 tbl_users.hasMany(tbl_keywords, {
   foreignKey: "id",

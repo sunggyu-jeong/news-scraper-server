@@ -1,4 +1,4 @@
-// controllers/newsController.js
+// controllers/newsController
 import { Request, Response } from 'express';
 import { launch } from 'puppeteer';
 

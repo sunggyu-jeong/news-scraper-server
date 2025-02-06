@@ -1,5 +1,5 @@
 import { DataTypes, Sequelize } from 'sequelize';
-import sequelize from '../sequelize.js';
+import sequelize from '../sequelize';
 
 const tbl_keywords = sequelize.define('tbl_keywords', {
   id: {

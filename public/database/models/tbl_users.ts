@@ -1,6 +1,6 @@
 import { DataTypes } from 'sequelize';
-import { hashedPassword } from '../../../comm/utils.js';
-import sequelize from '../sequelize.js';
+import { hashedPassword } from '../../../comm/utils';
+import sequelize from '../sequelize';
 
 const tbl_users = sequelize.define('tbl_users', {
   id: {
