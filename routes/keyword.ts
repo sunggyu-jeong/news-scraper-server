@@ -5,7 +5,7 @@ import {
   getKeywords,
   postDefaultKeywords,
   postKeywords,
-} from '../controller/KeywordController';
+} from '../controller/keywordController';
 import { verifyAccessToken } from '../middleware/index';
 
 const router = Router();
