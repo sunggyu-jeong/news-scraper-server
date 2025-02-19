@@ -18,7 +18,7 @@
 - JWT(AccessToken, RefreshToken) 토큰 기반 인증 시스템
 - Sequelize를 사용한 데이터베이스 모델링
 - Express.js를 이용한 API 라우팅
-- 뉴스 크롤링
+- Browserless 방식의 뉴스 크롤링
 
 ## 시작하기
 
