@@ -3,7 +3,8 @@ import express, {
   NextFunction,
   Request,
   Response,
-  Router} from 'express';
+  Router,
+} from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import user from './routes/user';
@@ -25,7 +26,10 @@ const app = express()
   .use(helmet())
   .use(
     cors({
-      origin: ['http://localhost:8080', 'https://localhost:3000'],
+      origin: [
+        'https://news-scraper-three.vercel.app',
+        'https://localhost:3000',
+      ],
       credentials: true,
     })
   )
