@@ -1,4 +1,4 @@
-# NewsScraper
+# ![Image](https://github.com/user-attachments/assets/cbe42540-59af-4e8d-8f59-eb22f0159870)
 
 **Express.js** 프레임워크, **PostgreSQL** 데이터베이스, 그리고 **Sequelize ORM**을 사용하여 RESTful API를 구축한 프로젝트.
 
