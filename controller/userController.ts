@@ -5,6 +5,7 @@ import { isEmpty } from '../comm/utils';
 import tbl_default_keywords from '../public/database/models/tbl_default_keywords';
 import tbl_keywords from '../public/database/models/tbl_keywords';
 import { Request, Response } from 'express';
+import cookie from 'cookie';
 
 export async function postLogin(req: Request, res: Response): Promise<void> {
   try {
@@ -34,12 +35,17 @@ export async function postLogin(req: Request, res: Response): Promise<void> {
       };
       const tokens = generateToken(tokensInfomation);
       const accessToken = tokens.accessToken;
-      res.cookie('refreshToken', tokens.refreshToken, {
-        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7일
-        httpOnly: true,
-        secure: true, // HTTPS 필수
-        path: '/',
-      });
+
+      res.setHeader(
+        'Set-Cookie',
+        cookie.serialize('refreshToken', String(tokens.refreshToken), {
+          expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7일
+          httpOnly: true, // 클라이언트에서 접근할 수 없게
+          secure: true, // HTTPS 연결에서만 설정
+          path: '/', // 쿠키가 유효한 경로
+          sameSite: 'none', // 크로스 사이트에서 쿠키를 보낼 수 있도록 설정
+        })
+      );
       res.status(200).json({
         status: 200,
         message: 'success',
@@ -215,13 +221,17 @@ export async function silentRefresh(
     // 토큰 정보로 새로운 access token, refresh token 발행
     const tokens = generateToken(tokensInfomation);
 
-    // RTR: 리프래시 토큰 갱신
-    res.cookie('refreshToken', tokens.refreshToken, {
-      expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7일
-      httpOnly: true,
-      secure: true, // HTTPS 필수
-      path: '/',
-    });
+    res.setHeader(
+      'Set-Cookie',
+      cookie.serialize('refreshToken', tokens.refreshToken, {
+        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7일
+        httpOnly: true, // 클라이언트에서 접근할 수 없게
+        secure: true, // HTTPS 연결에서만 설정
+        path: '/', // 쿠키가 유효한 경로
+        sameSite: 'none', // 크로스 사이트에서 쿠키를 보낼 수 있도록 설정
+      })
+    );
+
     // 엑세스 토큰 반환
     res.status(200).json({
       status: 200,
@@ -233,7 +243,16 @@ export async function silentRefresh(
     });
   } catch (error) {
     console.log('>>>>>>>> OAuth Refresh Token 발행 중 오류 발생', error);
-    res.cookie('refreshToken', '', { expires: new Date(0), httpOnly: true });
+    res.setHeader(
+      'Set-Cookie',
+      cookie.serialize('refreshToken', '', {
+        expires: new Date(0),
+        httpOnly: true, // 클라이언트에서 접근할 수 없게
+        secure: true, // HTTPS 연결에서만 설정
+        path: '/', // 쿠키가 유효한 경로
+        sameSite: 'none', // 크로스 사이트에서 쿠키를 보낼 수 있도록 설정
+      })
+    );
     res.status(409).json({
       status: 409,
       message: '세션이 만료되었습니다. 다시 로그인 해 주세요.',
