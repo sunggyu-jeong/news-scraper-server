@@ -37,6 +37,7 @@ export async function postLogin(req: Request, res: Response): Promise<void> {
       res.cookie('refreshToken', tokens.refreshToken, {
         expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7일
         httpOnly: true,
+        secure: true, // HTTPS 필수
         path: '/',
       });
       res.status(200).json({
@@ -218,6 +219,7 @@ export async function silentRefresh(
     res.cookie('refreshToken', tokens.refreshToken, {
       expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7일
       httpOnly: true,
+      secure: true, // HTTPS 필수
       path: '/',
     });
     // 엑세스 토큰 반환

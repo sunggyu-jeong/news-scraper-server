@@ -1,6 +1,6 @@
 // controllers/newsController
 import { Request, Response } from 'express';
-import { launch } from 'puppeteer';
+import puppeteer from 'puppeteer-core';
 
 interface NewsItem {
   newsType: string;
@@ -191,11 +191,10 @@ export async function getNews(req: Request, res: Response): Promise<void> {
   const searchUrls = generateSearchUrls(queries, startDate, endDate);
 
   try {
-    const browser = await launch({
-      headless: true,
-      defaultViewport: null,
-      args: ['--start-maximized'],
+    const browser = await puppeteer.connect({
+      browserWSEndpoint: process.env.BROWSERLESS_TOKEN,
     });
+
     // 최대 탭 개수 2개, 3개 이상 실행 시 검색기록을 제대로 가져오지 못함.
     const maxConcurrentTabs = 2;
     const allNews: NewsItem[] = [];

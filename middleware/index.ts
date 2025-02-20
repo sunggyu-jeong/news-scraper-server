@@ -1,9 +1,6 @@
 import jwt from 'jsonwebtoken';
-import { config } from 'dotenv';
 import { isEmpty } from '../comm/utils.js';
 import { NextFunction, Request, Response } from 'express';
-
-config();
 
 export const verifyAccessToken = (
   req: Request,
