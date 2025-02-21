@@ -1,6 +1,7 @@
 // controllers/newsController
 import { Request, Response } from 'express';
 import puppeteer from 'puppeteer-core';
+import { waitForTimeout } from '../comm/utils';
 
 interface NewsItem {
   newsType: string;
@@ -68,29 +69,50 @@ const generateSearchUrls = (
  * 페이지의 맨 아래에 도달하거나 최대 스크롤 시도 횟수에 도달할 때까지 더 많은 콘텐츠를 로드하기 위해 페이지를 스크롤
  *
  * @param {any} page - 스크롤할 Puppeteer 페이지 객체.
- * @param {number} [maxScrollAttempts=20] - 최대 스크롤 시도 횟수. 서버 부하를 막기 위해 디폴트 20 설정
+ * @param {number} [maxScrollAttempts=15] - 최대 스크롤 시도 횟수. 서버 부하를 막기 위해 디폴트 14(최대 150개의 데이터만 조회되게) 설정
  * @returns {Promise<void>} - 스크롤이 완료되면 resolve되는 Promise.
  */
 const scrollPageToLoad = async (
   page: any,
-  maxScrollAttempts: number = 20
+  maxScrollAttempts: number = 14
 ): Promise<void> => {
-  let scrollAttempts = 0;
   let previousHeight = await page.evaluate(() => document.body.scrollHeight);
+  let scrollAttempts = 0;
 
-  while (scrollAttempts <= maxScrollAttempts) {
+  while (scrollAttempts < maxScrollAttempts) {
+    // 페이지 로딩 상태를 확인
+    await page.waitForFunction(() => document.readyState === 'complete');
+
+    // 스크롤을 끝까지 내리기
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
 
+    await waitForTimeout(300);
+    // 로딩 인디케이터의 display 상태가 'none'으로 변경되었는지 확인
+    const isLoadingFinished = await page.evaluate(() => {
+      const loadingElement = document.querySelector(
+        '.mod_more_wrap2.type_loading._infinite_loading'
+      );
+      if (loadingElement) {
+        const style = window.getComputedStyle(loadingElement);
+        return style.display === 'none';
+      }
+      return false;
+    });
+    console.log('>>>>>>>>>>>>>> 로딩이 끝났는가?', isLoadingFinished);
+
     const newHeight = await page.evaluate(() => document.body.scrollHeight);
-    console.log(
-      `스크롤 시도 #${scrollAttempts + 1}, ${previousHeight}, ${newHeight}`
-    );
-    if (previousHeight === newHeight) {
+    if (isLoadingFinished) {
+      console.log('>>>>>>>>>>>> 전체 뉴스 컨텐츠의 로딩이 완료되었습니다.');
       break;
     }
 
     previousHeight = newHeight;
-    scrollAttempts += 1;
+    scrollAttempts++;
+    if (scrollAttempts >= maxScrollAttempts) {
+      console.log(
+        '>>>>>>>>>>>> 최대 스크롤 한도에 도달했습니다. 서비스를 종료합니다.'
+      );
+    }
   }
 };
 
@@ -193,10 +215,16 @@ export async function getNews(req: Request, res: Response): Promise<void> {
   try {
     const browser = await puppeteer.connect({
       browserWSEndpoint: process.env.BROWSERLESS_TOKEN,
+      defaultViewport: null,
     });
+    // const browser = await launch({
+    //   headless: false,
+    //   defaultViewport: null,
+    //   args: ['--start-maximized'],
+    // });
 
     // 최대 탭 개수 2개, 3개 이상 실행 시 검색기록을 제대로 가져오지 못함.
-    const maxConcurrentTabs = 2;
+    const maxConcurrentTabs = 5;
     const allNews: NewsItem[] = [];
 
     // 병렬 실행 제한을 적용하여 URL 처리
