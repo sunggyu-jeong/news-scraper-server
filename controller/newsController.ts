@@ -217,13 +217,8 @@ export async function getNews(req: Request, res: Response): Promise<void> {
       browserWSEndpoint: process.env.BROWSERLESS_TOKEN,
       defaultViewport: null,
     });
-    // const browser = await launch({
-    //   headless: false,
-    //   defaultViewport: null,
-    //   args: ['--start-maximized'],
-    // });
 
-    // 최대 탭 개수 2개, 3개 이상 실행 시 검색기록을 제대로 가져오지 못함.
+    // 최대 탭 개수
     const maxConcurrentTabs = 5;
     const allNews: NewsItem[] = [];
 
