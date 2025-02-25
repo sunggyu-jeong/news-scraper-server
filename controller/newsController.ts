@@ -76,7 +76,6 @@ const scrollPageToLoad = async (
   page: any,
   maxScrollAttempts: number = 14
 ): Promise<void> => {
-  let previousHeight = await page.evaluate(() => document.body.scrollHeight);
   let scrollAttempts = 0;
 
   while (scrollAttempts < maxScrollAttempts) {
@@ -100,17 +99,15 @@ const scrollPageToLoad = async (
     });
     console.log('>>>>>>>>>>>>>> 로딩이 끝났는가?', isLoadingFinished);
 
-    const newHeight = await page.evaluate(() => document.body.scrollHeight);
     if (isLoadingFinished) {
       console.log('>>>>>>>>>>>> 전체 뉴스 컨텐츠의 로딩이 완료되었습니다.');
       break;
     }
 
-    previousHeight = newHeight;
     scrollAttempts++;
     if (scrollAttempts >= maxScrollAttempts) {
       console.log(
-        '>>>>>>>>>>>> 최대 스크롤 한도에 도달했습니다. 서비스를 종료합니다.'
+        '>>>>>>>>>>>> 최대 스크롤 한도에 도달했습니다. 검색 요청을 종료합니다.'
       );
     }
   }
