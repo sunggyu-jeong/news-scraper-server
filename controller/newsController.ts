@@ -52,11 +52,7 @@ const validateRequest = (req: Request, res: Response): boolean => {
  * @param {string} endDate 검색 종료일
  * @returns {Array<string>} 검색 URL 목록 반환
  */
-const generateSearchUrls = (
-  queries: string,
-  startDate: string,
-  endDate: string
-): Array<string> => {
+const generateSearchUrls = (queries: string, startDate: string, endDate: string): Array<string> => {
   return queries.split(',').map((query) => {
     return `https://search.naver.com/search.naver?where=news&query=${query}&ds=${startDate}&de=${endDate}&sort=0&field=0&photo=0&nso=so%3Ar%2Cp%3Afrom${startDate.replace(
       /\./g,
@@ -72,10 +68,7 @@ const generateSearchUrls = (
  * @param {number} [maxScrollAttempts=15] - 최대 스크롤 시도 횟수. 서버 부하를 막기 위해 디폴트 14(최대 150개의 데이터만 조회되게) 설정
  * @returns {Promise<void>} - 스크롤이 완료되면 resolve되는 Promise.
  */
-const scrollPageToLoad = async (
-  page: any,
-  maxScrollAttempts: number = 14
-): Promise<void> => {
+const scrollPageToLoad = async (page: any, maxScrollAttempts: number = 14): Promise<void> => {
   let scrollAttempts = 0;
 
   while (scrollAttempts < maxScrollAttempts) {
@@ -88,9 +81,7 @@ const scrollPageToLoad = async (
     await waitForTimeout(300);
     // 로딩 인디케이터의 display 상태가 'none'으로 변경되었는지 확인
     const isLoadingFinished = await page.evaluate(() => {
-      const loadingElement = document.querySelector(
-        '.mod_more_wrap2.type_loading._infinite_loading'
-      );
+      const loadingElement = document.querySelector('.mod_more_wrap2.type_loading._infinite_loading');
       if (loadingElement) {
         const style = window.getComputedStyle(loadingElement);
         return style.display === 'none';
@@ -106,9 +97,7 @@ const scrollPageToLoad = async (
 
     scrollAttempts++;
     if (scrollAttempts >= maxScrollAttempts) {
-      console.log(
-        '>>>>>>>>>>>> 최대 스크롤 한도에 도달했습니다. 검색 요청을 종료합니다.'
-      );
+      console.log('>>>>>>>>>>>> 최대 스크롤 한도에 도달했습니다. 검색 요청을 종료합니다.');
     }
   }
 };
@@ -122,9 +111,21 @@ const scrollPageToLoad = async (
  */
 const processTab = async (browser: any, url: string): Promise<NewsItem[]> => {
   const page = await browser.newPage();
-  await page.setUserAgent(
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-  );
+  await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
+  await page.setRequestInterception(true);
+  page.on('request', (req: any) => {
+    const resourceType = req.resourceType();
+    if (['image', 'stylesheet', 'font', 'media'].includes(resourceType)) {
+      req.abort();
+      return;
+    }
+    // 광고 및 트래킹 관련 URL 패턴 차단
+    if (/adservice|doubleclick|analytics/i.test(url)) {
+      req.abort();
+      return;
+    }
+    req.continue();
+  });
   console.log(`크롤링 시작: ${url}`);
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
   // 크롬 환경에서 페이지 로딩이 완료되기를 기다림.(최대 1분)
@@ -162,26 +163,16 @@ const processTab = async (browser: any, url: string): Promise<NewsItem[]> => {
  *   - {string} description - 뉴스 설명
  *   - {string} date - 뉴스 날짜
  */
-const extractNewsData = async (
-  page: any,
-  keyword: string
-): Promise<Array<NewsItem>> => {
+const extractNewsData = async (page: any, keyword: string): Promise<Array<NewsItem>> => {
   return await page.evaluate((keyword: string) => {
     const newsItems: Array<NewsItem> = [];
     document.querySelectorAll('#main_pack .list_news .bx').forEach((el) => {
       const newsType = '네이버뉴스';
-      const source =
-        (el.querySelector('.info_group .press') as HTMLElement)?.innerText ||
-        '';
-      const title =
-        (el.querySelector('.news_tit') as HTMLElement)?.innerText || '';
-      const link =
-        (el.querySelector('.news_tit') as HTMLAnchorElement)?.href || '';
-      const description =
-        (el.querySelector('.news_dsc') as HTMLElement)?.innerText || '';
-      const date =
-        (el.querySelector('.info_group, .date') as HTMLElement)?.innerText ||
-        '';
+      const source = (el.querySelector('.info_group .press') as HTMLElement)?.innerText || '';
+      const title = (el.querySelector('.news_tit') as HTMLElement)?.innerText || '';
+      const link = (el.querySelector('.news_tit') as HTMLAnchorElement)?.href || '';
+      const description = (el.querySelector('.news_dsc') as HTMLElement)?.innerText || '';
+      const date = (el.querySelector('.info_group, .date') as HTMLElement)?.innerText || '';
       if (title && link) {
         newsItems.push({
           newsType,
@@ -222,12 +213,15 @@ export async function getNews(req: Request, res: Response): Promise<void> {
     // 병렬 실행 제한을 적용하여 URL 처리
     for (let i = 0; i < searchUrls.length; i += maxConcurrentTabs) {
       const batchUrls = searchUrls.slice(i, i + maxConcurrentTabs);
-      const batchResults: NewsItem[][] = await Promise.all(
-        batchUrls.map((url) => processTab(browser, url))
-      );
-      allNews.push(...batchResults.flat());
+      const batchResults = await Promise.allSettled(batchUrls.map((url) => processTab(browser, url)));
+      batchResults.forEach((result) => {
+        if (result.status === 'fulfilled') {
+          allNews.push(...result.value);
+        } else {
+          console.error('탭 처리 중 오류:', result.reason);
+        }
+      });
     }
-
     await browser.close();
 
     res.status(200).json({
