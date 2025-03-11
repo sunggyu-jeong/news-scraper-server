@@ -10,6 +10,7 @@ import cors from 'cors';
 import user from './routes/user';
 import keyword from './routes/keyword';
 import news from './routes/news';
+import automail from './routes/automail';
 import sequelize from './public/database/models/index';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
@@ -34,7 +35,7 @@ const app = express()
     })
   )
   .use(cookieParser() as any)
-  .use('/api', Router().use(news).use(user).use(keyword))
+  .use('/api', Router().use(news).use(user).use(keyword).use(automail))
   .use(
     helmet({
       contentSecurityPolicy: {

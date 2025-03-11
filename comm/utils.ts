@@ -80,3 +80,14 @@ export const hashedPassword = async (password: string): Promise<string> => {
   const salt = await genSalt(saltRounds);
   return hash(password, salt);
 };
+
+/**
+ * 주어진 이메일 양식이 유효한지 확인합니다.
+ * 
+ * @param email 입력된 이메일 정보
+ * @returns boolean
+ */
+export const isValidEmail = (email: string): boolean => {
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return emailRegex.test(email);
+};
