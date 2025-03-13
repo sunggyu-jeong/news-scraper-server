@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { isValidEmail } from '../comm/utils';
 import tbl_automail_recipients from '../public/database/models/tbl_automail_recipients';
 import { Request, Response } from 'express';
@@ -121,6 +122,26 @@ export async function deleteAutomailRecipients(req: Request, res: Response) {
       status: 500,
       message: '수신자 삭제 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
       messageDev: '수신자 삭제 실패',
+    });
+  }
+}
+
+export async function manualBatch(req: Request, res: Response) {
+  try {
+    const response = await axios.post(
+      `${process.env.BATCH_INTERNAL_URL}/manual/run`, req.body.jobName
+    );
+    res.status(200).json({
+      status: 200,
+      message: '수동 배치 실행 성공',
+      data: response.data,
+    });
+  } catch(error) {
+    console.log('>>>>>>>>>>>>> 수동 배치 중 오류 발생', error);
+    res.status(500).json({
+      status: 500,
+      message: '수동 배치 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+      messageDev: '수동 배치 실패',
     });
   }
 }
