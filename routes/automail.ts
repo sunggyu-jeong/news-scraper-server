@@ -11,7 +11,7 @@ router.post("/automail/users", postAutomailRecipients)
 router.put("/automail/users", putAutomailRecipients)
 router.delete("/automail/users", deleteAutomailRecipients)
 
-router.post("/manual/run", manualBatch)
+router.post("/batchjob/manual/run", manualBatch)
 
 
 export default router;
