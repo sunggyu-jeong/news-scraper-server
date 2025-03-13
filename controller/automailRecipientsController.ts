@@ -128,6 +128,7 @@ export async function deleteAutomailRecipients(req: Request, res: Response) {
 
 export async function manualBatch(req: Request, res: Response) {
   try {
+    console.log('>>>>>>>>>>>>> 수동 배치 실행 요청', req.body.jobName, process.env.BATCH_INTERNAL_URL);
     const response = await axios.post(
       `${process.env.BATCH_INTERNAL_URL}/manual/run`, req.body.jobName
     );
