@@ -28,7 +28,7 @@ const app = express()
   .use(
     cors({
       origin: [
-        'https://news-scraper-three.vercel.app',
+        'https://news-scraper.pages.dev',
         'http://localhost:8080',
       ],
       credentials: true,
