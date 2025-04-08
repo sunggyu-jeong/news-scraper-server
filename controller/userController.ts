@@ -110,7 +110,7 @@ export async function putUser(req: Request, res: Response): Promise<void> {
   try {
     const user = await tbl_users.findOne({
       where: { userId: req.body.userId },
-      attributes: ['password', 'updatedAt'],
+      attributes: ['id', 'password', 'updatedAt'],
     });
     if (!user) {
       res.status(404).json({
