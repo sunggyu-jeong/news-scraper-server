@@ -34,7 +34,7 @@ export const generateToken = (user: UserType): TokenItem => {
 
 /**
  * 토큰이 유효한지 확인
- 
+ *
  * @param {String} token 검사하려는 토큰
  * @param {String} key 토큰 키
  * @returns 복호화 된 토큰 반환

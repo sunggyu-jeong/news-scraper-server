@@ -166,25 +166,36 @@ const processTab = async (browser: any, url: string): Promise<NewsItem[]> => {
 const extractNewsData = async (page: any, keyword: string): Promise<Array<NewsItem>> => {
   return await page.evaluate((keyword: string) => {
     const newsItems: Array<NewsItem> = [];
-    document.querySelectorAll('#main_pack .list_news .bx').forEach((el) => {
-      const newsType = '네이버뉴스';
-      const source = (el.querySelector('.info_group .press') as HTMLElement)?.innerText || '';
-      const title = (el.querySelector('.news_tit') as HTMLElement)?.innerText || '';
-      const link = (el.querySelector('.news_tit') as HTMLAnchorElement)?.href || '';
-      const description = (el.querySelector('.news_dsc') as HTMLElement)?.innerText || '';
-      const date = (el.querySelector('.info_group, .date') as HTMLElement)?.innerText || '';
+
+    document.querySelectorAll(
+      '#main_pack .list_news._infinite_list .sds-comps-text-type-headline1'
+    ).forEach(span => {
+      const card     = span.closest('div.KCTl6C0w4OoJ8NqzXseI')      // 기사 박스
+                    || span.closest('li')                           // (백업)
+      const title    = span.textContent?.trim()
+      const link     = span.closest('a')?.href ?? ''
+      const source   = card?.querySelector(
+                        '.sds-comps-profile-info-title-text'
+                      )?.textContent?.trim() ?? ''
+      const description     = card?.querySelector(
+                        '.sds-comps-text-type-body1'
+                      )?.textContent?.trim() ?? ''
+      const date     = card?.querySelector(
+                        '.sds-comps-profile-info-subtext'
+                      )?.textContent?.trim() ?? ''
+
       if (title && link) {
         newsItems.push({
-          newsType,
+          newsType: '네이버뉴스',
           keyword,
           source,
           title,
           link,
           description,
-          date,
-        });
+          date
+        })
       }
-    });
+    })
     return newsItems;
   }, keyword);
 };
