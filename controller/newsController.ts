@@ -1,4 +1,3 @@
-// controllers/newsController
 import { Request, Response } from 'express';
 import puppeteer from 'puppeteer-core';
 import { waitForTimeout } from '../comm/utils';
@@ -170,20 +169,17 @@ const extractNewsData = async (page: any, keyword: string): Promise<Array<NewsIt
     document.querySelectorAll(
       '#main_pack .list_news._infinite_list .sds-comps-text-type-headline1'
     ).forEach(span => {
-      const card     = span.closest('div.KCTl6C0w4OoJ8NqzXseI')      // 기사 박스
-                    || span.closest('li')                           // (백업)
-      const title    = span.textContent?.trim()
-      const link     = span.closest('a')?.href ?? ''
-      const source   = card?.querySelector(
-                        '.sds-comps-profile-info-title-text'
-                      )?.textContent?.trim() ?? ''
-      const description     = card?.querySelector(
-                        '.sds-comps-text-type-body1'
-                      )?.textContent?.trim() ?? ''
-      const date     = card?.querySelector(
-                        '.sds-comps-profile-info-subtext'
-                      )?.textContent?.trim() ?? ''
-
+      let card: HTMLElement | null = span.parentElement as HTMLElement | null;
+      while (card && !card.querySelector('.sds-comps-profile-info-title-text')) {
+        card = card.parentElement;
+      }
+      if (!card) return;
+      const title = span.textContent?.trim();
+      const link  = (span.closest('a') as HTMLAnchorElement)?.href ?? '';
+      const source = card.querySelector('.sds-comps-profile-info-title-text')?.textContent?.trim() ?? '';
+      const description = card.querySelector('.sds-comps-text-type-body1')?.textContent?.trim() ?? '';
+      const date = card.querySelector('.sds-comps-profile-info-subtext')?.textContent?.trim() ?? '';
+    
       if (title && link) {
         newsItems.push({
           newsType: '네이버뉴스',
@@ -192,10 +188,10 @@ const extractNewsData = async (page: any, keyword: string): Promise<Array<NewsIt
           title,
           link,
           description,
-          date
-        })
+          date,
+        });
       }
-    })
+    });
     return newsItems;
   }, keyword);
 };
