@@ -5,7 +5,9 @@ import { Request, Response } from 'express';
 
 export async function getAutomailRecipients(req: Request, res: Response) {
   try {
-    const users = await tbl_automail_recipients.findAll();
+    const users = await tbl_automail_recipients.findAll({
+      order: [['id', 'ASC']],
+    });
     res.status(200).json({
       status: 200,
       message: 'success',
@@ -66,7 +68,7 @@ export async function putAutomailRecipients(req: Request, res: Response) {
       return;
     }
     const user = await tbl_automail_recipients.findOne({
-      where: { email: req.body.email },
+      where: { email: req.body.id },
     });
     if (!user) {
       res.status(404).json({
