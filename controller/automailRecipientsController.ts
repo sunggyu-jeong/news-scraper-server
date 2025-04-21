@@ -68,7 +68,7 @@ export async function putAutomailRecipients(req: Request, res: Response) {
       return;
     }
     const user = await tbl_automail_recipients.findOne({
-      where: { email: req.body.id },
+      where: { id: req.body.id },
     });
     if (!user) {
       res.status(404).json({
