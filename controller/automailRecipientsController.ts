@@ -102,7 +102,7 @@ export async function putAutomailRecipients(req: Request, res: Response) {
 export async function deleteAutomailRecipients(req: Request, res: Response) {
   try {
     const user = await tbl_automail_recipients.findOne({
-      where: { email: req.query.email },
+      where: { id: req.query.id },
     });
     if (!user) {
       res.status(404).json({
