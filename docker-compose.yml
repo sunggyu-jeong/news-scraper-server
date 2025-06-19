@@ -35,7 +35,7 @@ services:
   # ─────────────────────────────────────────────────────────────
   app:
     build:
-      context: ./backend            # Dockerfile 이 있는 경로
+      context: .            # Dockerfile 이 있는 경로
       dockerfile: Dockerfile        # 사용할 Dockerfile 이름
     image: news-scraper-server:latest        # 빌드된 이미지 이름
     container_name: news-scraper-server    # 컨테이너 이름 지정
