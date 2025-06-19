@@ -23,12 +23,19 @@ services:
       - "5432:5432"                 # 호스트 5432 포트 ↔ 컨테이너 5432 포트 연결
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ~/pg-ssl/server.crt:/var/lib/postgresql/server.crt:ro
+      - ~/pg-ssl/server.key:/var/lib/postgresql/server.key:ro
       # pgdata 라는 이름의 Docker 볼륨을
       # 실제 DB 데이터가 저장되는 컨테이너 내부 경로에 연결
     env_file:
       - .env                        # 같은 디렉터리의 .env 파일에서 POSTGRES_* 값 읽어옴
     networks:
       - app-network                 # 위에서 정의한 네트워크에 연결
+    command:
+      - "postgres"
+      - "-c ssl=on"
+      - "-c ssl_cert_file=/var/lib/postgresql/server.crt"
+      - "-c ssl_key_file=/var/lib/postgresql/server.key"
 
   # ─────────────────────────────────────────────────────────────
   # 2) 백엔드 애플리케이션 서비스
