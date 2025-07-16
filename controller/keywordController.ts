@@ -48,7 +48,6 @@ export async function postKeywords(req: Request, res: Response): Promise<void> {
     const keywords = req.body.map((el: string) => {
       return { keyword: el, id: decryptedAccessToken.id };
     });
-    console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', keywords);
     await tbl_keywords.bulkCreate(keywords, { ignoreDuplicates: true });
     res.status(200).json({
       status: 200,
@@ -70,15 +69,9 @@ export async function deleteKeywords(
   res: Response
 ): Promise<void> {
   try {
-    console.log(
-      '>>>>>>>> 키워드 삭제 요청',
-      req.query,
-      typeof req.query.keywordIds
-    );
     const response = await tbl_keywords.destroy({
       where: { keywordId: req.query.keywordIds },
     });
-    console.log('>>>>>>>>>>>>>>>>>>>>', response);
     if (response === 0) {
       res.status(404).json({
         status: 404,
@@ -108,10 +101,6 @@ export async function getDefaultKeywords(
 ): Promise<void> {
   try {
     const keywords = await tbl_default_keywords.findAll();
-    console.log(
-      '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>',
-      keywords.map((el) => el.get({ plain: true }))
-    );
     res.status(200).json({
       status: 200,
       message: 'success',

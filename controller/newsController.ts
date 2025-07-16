@@ -87,7 +87,6 @@ const scrollPageToLoad = async (page: any, maxScrollAttempts: number = 14): Prom
       }
       return false;
     });
-    console.log('>>>>>>>>>>>>>> 로딩이 끝났는가?', isLoadingFinished);
 
     if (isLoadingFinished) {
       console.log('>>>>>>>>>>>> 전체 뉴스 컨텐츠의 로딩이 완료되었습니다.');
@@ -198,7 +197,6 @@ const extractNewsData = async (page: any, keyword: string): Promise<Array<NewsIt
 
 // 뉴스 데이터를 크롤링하는 메소드
 export async function getNews(req: Request, res: Response): Promise<void> {
-  console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>', req, res);
   if (!validateRequest(req, res)) return;
   const queries = req.query.queries as string;
   const startDate = req.query.startDate as string;

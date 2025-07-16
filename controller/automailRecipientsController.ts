@@ -37,11 +37,6 @@ export async function postAutomailRecipients(req: Request, res: Response) {
     const response = await tbl_automail_recipients.create(req.body, {
       ignoreDuplicates: true,
     });
-    console.log(
-      '>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>디버깅 로그',
-      response,
-      req.body
-    );
     res.status(201).json({
       status: 201,
       message: 'success',

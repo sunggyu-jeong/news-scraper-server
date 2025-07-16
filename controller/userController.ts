@@ -9,7 +9,6 @@ import cookie from 'cookie';
 
 export async function postLogin(req: Request, res: Response): Promise<void> {
   try {
-    console.log('>>>>>>>> POST /user/login Start', req);
     // ID로 유저 정보 조회
     const user = await tbl_users.findOne({
       where: { userId: req.body.userId },
@@ -25,7 +24,6 @@ export async function postLogin(req: Request, res: Response): Promise<void> {
       return;
     }
     const userData = user?.get({ plain: true });
-    console.log('>>>>>>>>>>>', userData);
     // 사용자가 전달한 비밀번호와 데이터베이스 비밀번호 정보가 일치하는 지 확인
     if (compareSync(req.body.password, userData.password)) {
       const tokensInfomation = {
@@ -205,7 +203,6 @@ export async function silentRefresh(
   res: Response
 ): Promise<void> {
   try {
-    console.log('>>>>>>>>>>', req.cookies);
     const refreshToken = req.cookies.refreshToken;
     // 리프래시 토큰이 유효한지 검증 및 복호화
     const decodedValue = verifyToken(
