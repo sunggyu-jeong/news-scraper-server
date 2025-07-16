@@ -46,6 +46,8 @@ services:
       - .env                        # .env 에 정의된 DATABASE_URL 읽어옴
     depends_on:
       - postgres                    # postgres 컨테이너가 먼저 준비될 때까지 대기
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - app-network
 
