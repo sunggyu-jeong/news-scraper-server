@@ -1,3 +1,6 @@
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import dotenv from 'dotenv';
 import express, {
   json,
   NextFunction,
@@ -6,19 +9,16 @@ import express, {
   Router,
 } from 'express';
 import helmet from 'helmet';
-import cors from 'cors';
-import user from './routes/user';
+import sequelize from './public/database/models/index';
+import automail from './routes/automail';
 import keyword from './routes/keyword';
 import news from './routes/news';
-import automail from './routes/automail';
-import sequelize from './public/database/models/index';
-import cookieParser from 'cookie-parser';
-import dotenv from 'dotenv';
+import user from './routes/user';
 
 dotenv.config();
 
 sequelize
-  .sync({ force: false })
+  .sync({ force: true })
   .then(() => console.log('Connected to the database'))
   .catch((err) => console.error('Error connecting to the database:', err));
 
