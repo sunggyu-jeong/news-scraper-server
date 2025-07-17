@@ -18,6 +18,10 @@ const tbl_users = sequelize.define('tbl_users', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  email: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
   token: {
     type: DataTypes.STRING,
     defaultValue: null,
